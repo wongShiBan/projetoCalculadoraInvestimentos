@@ -79,7 +79,7 @@ export function generateReturnsArray(
        // investAmount -> total de investido = startingAmount + Qtd de aportes efetudos
        // Caso no início näo houver Contribution, entäo investAmount = startingAmount
        // OBS: na vida real, monthlyContribution pode ser variável, logo esta equaçäo näo se sustenta
-       const investAmount = startingAmount + monthlyContribution * timeReference;
+       const investedAmount = startingAmount + monthlyContribution * timeReference;
 
        // total de rendimento é igual tudo que tem no momento menos tudo que foi investido
        // Ex: total do momento - total investido 
