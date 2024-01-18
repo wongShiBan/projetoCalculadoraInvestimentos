@@ -9,7 +9,8 @@ function convertToMonthlyReturnRate(yearlyReturnRate){
     return yearlyReturnRate**(1/12);
 }
 
-function generateReturnsArray(
+// use export para garantir a acessibilidade a outros módulos
+export function generateReturnsArray(
     startingAmount = 0,            // investimento inicial
     timeHorizon = 0,               // tempo de projecao que pode ser em meses ou em anos
     timePeriod = "monthly",        // modo de avaliacao ( mes/ ano )
@@ -67,21 +68,26 @@ function generateReturnsArray(
        // taxa de rentabilidade e mais o valor da monthlyContribution;
        // 
        // Entäo, para ciclo seguinte, o totalAmount será corrigido pela aplicaçäo da taxa   
-       // e mais o valor da monthlyContribution, e deste modo já aprontando para o próximo ciclo;
+       // e mais o valor da monthlyContribution, e deste modo já preparando para o próximo ciclo;
        // 
        const totalAmount = returnsArray[timeReference-1].totalAmount * finalReturnRate + monthlyContribution;
 
+       // interestReturns diz o qto que rendeu naquele mes 
+       // É o valor que tem multiplicado pela taxa de retorno
+       const interestReturns = returnsArray[timeReference-1].totalAmount * finalReturnRate;
+
        // investAmount -> total de investido = startingAmount + Qtd de aportes efetudos
-       // Caso no início näo houve Contribution, entäo investAmount = startingAmount
+       // Caso no início näo houver Contribution, entäo investAmount = startingAmount
        // OBS: na vida real, monthlyContribution pode ser variável, logo esta equaçäo näo se sustenta
        const investAmount = startingAmount + monthlyContribution * timeReference;
 
-       // total dos rendimentos é igual = tudo que tem no momento menos tudo que foi investido
-       const totalInterestReturns = totalAmount - investAmount;
+       // total de rendimento é igual tudo que tem no momento menos tudo que foi investido
+       // Ex: total do momento - total investido 
+       const totalInterestReturns = totalAmount - investedAmount;
 
        // Neste loop (corresponde ao tempo de projeçäo) se faz criar a lista de objetos 
        // OBS: qdo os campos do objeto possuem nomes iguais às das variáveis, neste caso basta
-       // deixar os nomes dos campos.. 
+       // deixar os nomes dos campos para facilitar e simplificar a codificaçäo. 
        returnsArray.push({
         investedAmount,
         interestReturns,
@@ -96,5 +102,7 @@ function generateReturnsArray(
     // Passo seguinte, após desta linha de comando.. 
     // no terminal, digite git add . (ponto) => p/ atualizar index.html, main.js e investimentGoals.js
     //                     git commit -m 'escrever comentarios a respeito desta etapa do projeto'
+    // Estes 2 passos acima só devem ser executados quando finalizar toda a branch ? 
+    // Resposta: näo ! Eles podem ser executados assim que tiver necessidade de alguma interrupçäo.
   }
    
