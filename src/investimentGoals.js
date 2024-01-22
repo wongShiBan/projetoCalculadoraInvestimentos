@@ -9,20 +9,23 @@ function convertToMonthlyReturnRate(yearlyReturnRate){
     return yearlyReturnRate**(1/12);
 }
 
-// use export para garantir a acessibilidade a outros módulos
+// use export para garantir a acessibilidade de outros módulos a ele
+// Essa "function" fazer tudo para obter a lista de rendimentos, mes a mes
 export function generateReturnsArray(
     startingAmount = 0,            // investimento inicial
-    timeHorizon = 0,               // tempo de projecao que pode ser em meses ou em anos
-    timePeriod = "monthly",        // modo de avaliacao ( mes/ ano )
+    timeHorizon = 0,               // prazo ou tempo de projecao  
+    timePeriod = "monthly",        // tipo/modo do tempo de projeçäo ( mes/ ano )
     monthlyContribution = 0,       // aporte mensal
-    returnRate = 0,                // taxa de retorno que pode ser por/mes ou por/ano
-    returnTimeFrame = "monthly")   // modo de avaliacao ( mes/ ano )
+    returnRate = 0,                // taxa de retorno 
+    returnTimeFrame = "monthly")   // tipo/modo da taxa de retorno (por/mes ou por/ano)
 {
+    // Faz crítica dos dados de entrada 
     if (!startingAmount || !timeHorizon){   // um ou outro for false (!)
     throw new Error('Investimento inicial ou prazo devem ser informados com valores positivos!')
     };
 
     // ternário 
+    // Adequar a taxa de retorno para mes se o "tipo de taxa de retorno" informado for anual
     const finalReturnRate = returnTimeFrame === "monthly" ? 1 + returnRate/100 : convertToMonthlyReturnRate(1 + returnRate/100);
 
     // Se for 1 ano,   5%/12       ou  (5%)**1/12        ou  (5/100)**1/12
@@ -32,13 +35,14 @@ export function generateReturnsArray(
     // o montante final do investimento sem aporte:
     // mf = investimento_inicial * (1 + ((5/100)**1/(12*n)) ) onde n = total de anos 
 
-    // Prazo de investimento que pode ser informado em número de meses ou anos
+    // Prazo de investimento informado que pode ser em número de meses ou anos
+    // Adequar o prazo para mes se o "tipo de prazo" informado for anual
     const finalTimeHorizon = timePeriod === 'monthly' ?  timeHorizon : timeHorizon * 12;
 
-    // Objeto de referencia para cada objeto da lista, ou seja,
-    // todo objeto terá esses dados  
+    // Criar objeto de referencia com atributos necessários p/ que cada resultado de investimento 
+    // mensal 
     const referenceInvestimentObject = {
-      investedAmount: startingAmount,
+      investedAmount: startingAmount,     // investimento inicial de cada mes
       interestReturns: 0,                 // investimento atualizado com juros, do mes em questäo
       totalInterestReturns: 0,            // acumulador de todos os juros 
       month: 0,                           // nº de meses ocorridos desse investimento
@@ -53,6 +57,8 @@ export function generateReturnsArray(
     const returnsArray = [referenceInvestimentObject];  
     // para o primeiro elemento: [0] = referenceInvestimentObject 
 
+    // timeReference = 1, pois assim, o que se faz é preparar para o mes 1 
+    // porque o mes 0 é o "referenceInvestimentObject"
     for (let timeReference = 1; timeReference <= timeHorizon; timeReference++)
     {  // 1, 2, 3 ... n é sempre se refere ao término de cada mes 
        // ou seja, qdo for 1 é o fim de 1 
@@ -69,25 +75,52 @@ export function generateReturnsArray(
        // 
        // Entäo, para ciclo seguinte, o totalAmount será corrigido pela aplicaçäo da taxa   
        // e mais o valor da monthlyContribution, e deste modo já preparando para o próximo ciclo;
-       // 
+
+       // OBS: Esta equaçäo prepara o montante para o próximo mes
        const totalAmount = returnsArray[timeReference-1].totalAmount * finalReturnRate + monthlyContribution;
 
        // interestReturns diz o qto que rendeu naquele mes 
        // É o valor que tem multiplicado pela taxa de retorno
+       // Ex: timeReference-1.totalAmount se refere sempre o anterior 
        const interestReturns = returnsArray[timeReference-1].totalAmount * finalReturnRate;
 
-       // investAmount -> total de investido = startingAmount + Qtd de aportes efetudos
+       // investAmount -> total de investido = startingAmount + Qtd de aportes efetuados
        // Caso no início näo houver Contribution, entäo investAmount = startingAmount
        // OBS: na vida real, monthlyContribution pode ser variável, logo esta equaçäo näo se sustenta
+       // Ex: startingAmount = 10000, monthlyContribution = 3000, timeReference = 1 
+       // investedAmount = 13000
        const investedAmount = startingAmount + monthlyContribution * timeReference;
 
        // total de rendimento é igual tudo que tem no momento menos tudo que foi investido
-       // Ex: total do momento - total investido 
+       // Ex: total do momento menos ( - ) o total investido 
        const totalInterestReturns = totalAmount - investedAmount;
 
-       // Neste loop (corresponde ao tempo de projeçäo) se faz criar a lista de objetos 
+       // Neste loop (corresponde ao tempo de projeçäo), nele se cria a lista de objetos 
        // OBS: qdo os campos do objeto possuem nomes iguais às das variáveis, neste caso basta
        // deixar os nomes dos campos para facilitar e simplificar a codificaçäo. 
+
+       /* Dados informados 
+          investedAmount  = 10000
+          monthlyContribution  = 3000 
+          timeHorizon = 60 meses 
+          returnRate = 5 ao mes 
+       */
+
+       // OBS: 
+       // Para o mes 0 - o q se tem é o próprio conteúdo de "referenceInvestimentObject"
+       //
+       /* Para o mes 0 - investedAmount  = 10000,
+                         interestReturns = 0,
+                         totalInterestReturns = 0,
+                         month = 0,
+                         totalAmount = 10000
+
+          Para mes 1     investedAmount  = 13000,
+                         interestReturns = 10500,
+                         totalInterestReturns = 500,
+                         month = 1,
+                         totalAmount = 13500
+       */
        returnsArray.push({
         investedAmount,
         interestReturns,
@@ -97,6 +130,7 @@ export function generateReturnsArray(
        });
     }
 
+    // Saindo do For ..
     return returnsArray;
 
     // Passo seguinte, após desta linha de comando.. 
