@@ -11,6 +11,7 @@ import { generateReturnsArray } from "./src/investimentGoals";
 // no HTML <button id="calculate-results" form="investiment-form" type="submit"...>
 
 const form = document.getElementById("investiment-form"); 
+const clearFormButton = document.getElementById("clear-form"); 
 
 // pelo fato de ter declarado type="submit" do botäo "Calcular" no HTML
 // <button id="calculate-results" .. com isso, se pode capturar uma referencia dele com 
@@ -42,25 +43,32 @@ evt.preventDefault();   // traduçäo: "NAO EXECUTE O COMPORTAMENTO PADRAO"
 // A T E N C A O - O U T R A  F O R M A  DE  C A P T U R A R  1  R E F E R E N C I A 
 // const startingAmount = Number(form["starting-amount"].value);
 
-// investimento inicial
-const startingAmount = Number(document.getElementById("startingAmount").value);
+if (document.querySelector('.error'))    // .error, o ponto indica classe
+{  // se no documento - HTML - encontrar alguma classe ".error", isso indica que houve algum erro
+   // num campo input, logo, qdo isso acontecer, deve interromper o processamento dos investimentos.
+   return;                 
+}
+
+// investimento inicial - Para facilitar o usuário com o uso do método replace (Aula 17)
+// const startingAmount = Number(document.getElementById("startingAmount").value);
+const startingAmount = Number(document.getElementById("startingAmount").value.replace(",","."));
 
 // aporte mensal
-const additionalcontribution = Number(document.getElementById("additional-contribution").value);
+const additionalcontribution = Number(document.getElementById("additional-contribution").value.replace(",","."));
 
-// prazo (tempo) de investimento
+// prazo (tempo) de investimento - sempre vai ser inteiro
 const timeAmount = Number(document.getElementById("time-amount").value);
 // time-amount-period pode ser mes ou ano (obtém no select)
 const timeAmountPeriod = document.getElementById("time-amount-period").value;
 
 // Taxa de retorno do investimento
-const returnRate = Number(document.getElementById("return-rate").value);
+const returnRate = Number(document.getElementById("return-rate").value.replace(",","."));
 // Tipo da Taxa de retorno do investimento que pode ser mes ou ano (obtém no select)
 const returnRatePeriod = document.getElementById("evaluation-period").value;
 
 // Taxa de Imposto sobre lucro 
 // Ex: 15%
-const taxRate = Number(document.getElementById("tax-rate").value);
+const taxRate = Number(document.getElementById("tax-rate").value.replace(",","."));
 
 // parei em 12:47 
 // investimento inicial, prazo, flag prazo, aporte, Rentabilidade, flag Rentabilidade
@@ -74,6 +82,99 @@ const returnsArray = generateReturnsArray(startingAmount,
 
 console.log(returnsArray);
 
+}
+
+
+// Limpando o formulário com ou sem msgs de erro na tela
+function clearForm(){
+form['starting-amount'].value = '';
+form['additional-contribution'].value = '';
+form['time-amount'].value = '';
+form['return-rate'].value = '';
+form['tax-rate'].value = '';
+
+// errorInputContainers se refere à divisäo toda do formulário que contém a classe ".error" 
+// e onde tem essa classe ? Resp: na div_pai que engloba vários inputs 
+// Qdo se usa querySelector, o argumento passado deve indicar o tipo de seletor e o seu nome
+const errorInputContainers = document.querySelectorAll('.error');
+
+for (const errorInputContainer of errorInputContainers){
+    // errorInputContainer é o item corrente da lista de errorInputContainers
+    // e errorInputContainers se refere à div_pai, mas, é preciso tirar tbém os erros do avô
+    errorInputContainer.classList.remove('error');
+
+    // Procurar pelo pai do errorInputContainer que é no caso é o parentElement
+    errorInputContainer.parentElement.querySelector('p').remove();
+
+}
+
+}
+
+
+
+function inputValidate(evt){ 
+  // evt é o nome do objeto do evento  
+  // target é sempre o campo em que está sendo submetido ao evento "blur"
+  // Náo há necessidade de criticar caso o campo estiver em branco porque no HTML já critica
+  if (evt.target.value === '') {
+    return;
+  }
+
+  // Antes de prosseguir .. para exibir a msg de erro e pintar a borda de vermelho do campo..
+  // é preciso capturar o elemento_pai e elemento_avó deste evento "blur"
+  // elemento_avó é por causa da msg e pai é por causa da pintura da borda 
+
+  const {parentElement} = evt.target;
+  const grandParentElement = evt.target.parentElement.parentElement;
+  const inputValue = evt.target.value.replace(",",".");
+
+  if (isNaN(inputValue) || Number(inputValue) <= 0 && !parentElement.classList.contains('error')){  
+     // isNaN(inputValue) significa que o usuário digitou algo que näo era 1 número
+     // Se parentElement.classList náo contiver a classe 'error' 
+     // erorTextElement vai conter um elemento HTML criado a partir do JavaScript 
+     // é evidente que ele deve se associar à div_avó 
+
+     // Objetivos: <p class="text-red-500">Insira um valor numérico e maior do que zero</p>
+     const errorTextElement = document.createElement('p'); // <p></p>
+     errorTextElement.classList.add("text-red-500");       // <p class="text-red-500"></p>
+     errorTextElement.innerText = 'Insira um valor numérico e maior do que zero';
+
+     // adicionar + 1 classe(error do style.css) à div_pai
+     parentElement.classList.add('error');   
+     // Agregar um elemento - TAG <p> - à div_avô
+     grandParentElement.appendChild(errorTextElement);     
+  }
+  else if (parentElement.classList.contains('error') && !sNaN(inputValue) && Number(inputValue) > 0)
+   {  // este trecho é para remover o erro existente, condiçöes:
+      // parentElement.classList.contains('error') que dizer que tem uma mensagem de erro 
+      // !sNaN(inputValue) quer dizer näo é um isNaN
+      // e o seu valor é maior que zero 
+      parentElement.classList.remove('error');
+      // querySelector => Pesquise a classe '.error' - style,css - a partir do avô e seus descendentes .. usou '.error' foi por causa da querySelector (seletor) e seletor usa (.)
+      // e no caso de id seria algo + - assim: #algumaCoisa ..
+      // se fosse grandParentElement.querySelector('p'); neste caso capturaria o primeiro <p> q encontrou,
+      // aliás, pode existir + do que 1 <p> e caso necessite de capturar todas as ocorrencias
+      // pode usar querySelectorAll
+      grandParentElement.querySelector('p').remove();
+   }
+}
+
+// for percorre todos os campos "relevantes" da interface e inputValidate faz a critica deles
+for (const formElement of form){
+    // o form pode ser acessado como uma lista e a referencia de um de seus elementos pode ser pelo
+    // "name" 
+    // form[0...n]
+    
+    if (formElement.tagName==="INPUT" && formElement.hasAttribute("name")){
+        // tagName tem que ser maiúsculo ("INPUT") para comparaçäo
+        // Conceder a cada elemento, que satifaça às condiçöes, o poder se escutar o evento blur e de respondê-lo por meio de uma funçäo - inputValidate()
+        formElement.addEventListener('blur',inputValidate);
+        // formElement.addEventListener ('blur', inputValidate);  
+        // todas as vezes em há "addEventListener", a funçäo associado ao evento recebe um objeto (evt).
+        // Esse objeto (ex: evt) contém as informaçöes do evento em questäo
+        
+ 
+    }
 }
 
 // Ao disparar este programa , o que vai ser executado inicia-se aqui..
@@ -91,6 +192,9 @@ console.log(returnsArray);
 // ===========================
 // calculateButton.addEventListener('click', renderProgression);
 // form.addEventListener('submit', renderProgression);
-
 form.addEventListener('submit', renderProgression);
+
+// esta linha possibilita a este botäo de ouvir um "click"
+// e ao ouví-lo irá responder com a açäo da funçäo clearForm
+clearFormButton.addEventListener('click', clearForm);
 

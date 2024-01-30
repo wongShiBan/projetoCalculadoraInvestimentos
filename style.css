@@ -1,3 +1,16 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/*
+ é uma diretiva e .error é uma classe que engloba as 3 classes 
+ qdo 1 elemento tiver sido declarado com 
+*/
+@layer utilities{
+    .error
+    {
+        @apply border-2;
+        @apply border-red-600;
+        @apply rounded-lg;
+    }   
+}
