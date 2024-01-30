@@ -50,8 +50,8 @@ if (document.querySelector('.error'))    // .error, o ponto indica classe
 }
 
 // investimento inicial - Para facilitar o usuário com o uso do método replace (Aula 17)
-// const startingAmount = Number(document.getElementById("startingAmount").value);
-const startingAmount = Number(document.getElementById("startingAmount").value.replace(",","."));
+// const startingAmount = Number(document.getElementById("starting-amount").value);
+const startingAmount = Number(document.getElementById("starting-amount").value.replace(",","."));
 
 // aporte mensal
 const additionalcontribution = Number(document.getElementById("additional-contribution").value.replace(",","."));
@@ -72,7 +72,8 @@ const taxRate = Number(document.getElementById("tax-rate").value.replace(",","."
 
 // parei em 12:47 
 // investimento inicial, prazo, flag prazo, aporte, Rentabilidade, flag Rentabilidade
-const returnsArray = generateReturnsArray(startingAmount, 
+const returnsArray = generateReturnsArray(
+                     startingAmount, 
                      timeAmount,
                      timeAmountPeriod,
                      additionalcontribution,
@@ -144,7 +145,7 @@ function inputValidate(evt){
      // Agregar um elemento - TAG <p> - à div_avô
      grandParentElement.appendChild(errorTextElement);     
   }
-  else if (parentElement.classList.contains('error') && !sNaN(inputValue) && Number(inputValue) > 0)
+  else if (parentElement.classList.contains('error') && !isNaN(inputValue) && Number(inputValue) > 0)
    {  // este trecho é para remover o erro existente, condiçöes:
       // parentElement.classList.contains('error') que dizer que tem uma mensagem de erro 
       // !sNaN(inputValue) quer dizer näo é um isNaN
