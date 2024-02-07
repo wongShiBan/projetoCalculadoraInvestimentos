@@ -1,4 +1,5 @@
 import { generateReturnsArray } from "./src/investimentGoals";
+import {Chart} from "chart.js/auto";  // este endereço vem da própria documentaçäo
 
 // Declarando uma variável para receber uma referencia do "id" do botäo do HTML
 // const calculeButton = document.getElementById("calculate-results");  
@@ -10,8 +11,20 @@ import { generateReturnsArray } from "./src/investimentGoals";
 // botäo é q vai disparar o submit, aliás isso foi por causa da declaraçäo de type="submit" 
 // no HTML <button id="calculate-results" form="investiment-form" type="submit"...>
 
+const finalMoneyChart  = document.getElementById("final-money-contribution");
+const progressionChart = document.getElementById("progression");
+ 
 const form = document.getElementById("investiment-form"); 
 const clearFormButton = document.getElementById("clear-form"); 
+
+// let qdo o valor é variável
+let doughnutChartReference = {};   
+let progressionChartReference = {};
+
+// Formataçäo de valores númericos 
+function formatCurrency(value){ 
+  return value.toFixed(2);      // casas decimais            
+}
 
 // pelo fato de ter declarado type="submit" do botäo "Calcular" no HTML
 // <button id="calculate-results" .. com isso, se pode capturar uma referencia dele com 
@@ -44,10 +57,12 @@ evt.preventDefault();   // traduçäo: "NAO EXECUTE O COMPORTAMENTO PADRAO"
 // const startingAmount = Number(form["starting-amount"].value);
 
 if (document.querySelector('.error'))    // .error, o ponto indica classe
-{  // se no documento - HTML - encontrar alguma classe ".error", isso indica que houve algum erro
+{  // se no documento HTML encontrar alguma classe ".error", isso indica que houve algum erro
    // num campo input, logo, qdo isso acontecer, deve interromper o processamento dos investimentos.
    return;                 
 }
+
+resetCharts();
 
 // investimento inicial - Para facilitar o usuário com o uso do método replace (Aula 17)
 // const startingAmount = Number(document.getElementById("starting-amount").value);
@@ -72,6 +87,8 @@ const taxRate = Number(document.getElementById("tax-rate").value.replace(",","."
 
 // parei em 12:47 
 // investimento inicial, prazo, flag prazo, aporte, Rentabilidade, flag Rentabilidade
+// Aqui encontram-se as informaçöes necessárias para plotar os gráficos.
+// returnsArray é uma array que contém cada iteraçäo do prazo. 
 const returnsArray = generateReturnsArray(
                      startingAmount, 
                      timeAmount,
@@ -81,36 +98,143 @@ const returnsArray = generateReturnsArray(
                      returnRatePeriod
                     );
 
-console.log(returnsArray);
+// console.log(returnsArray); foi por uma necessidade temporária para entendimento do projeto 
+//  
+// uma vez que os dados seräo mostrados em gráficos entäo
+// console.log(returnsArray); näo terá mais validade.
 
+// Para plotar no gráfico, o que precisa säo os valores da última iteraçäo 
+const finalInvestimentObject = returnsArray[returnsArray.length-1];
+
+// Passar 2 variáveis para este construtor
+// { } corresponde um objeto 
+// finalMoneyChart é id dado a uma canva no HTML
+
+doughnutChartReference = new Chart(finalMoneyChart, {
+   type: 'doughnut',
+   data:  {
+      labels: [
+        //'Red',
+        //'Blue',
+        //'Yellow'
+        'Total investido',
+        'Rendimento líquido',
+        'Imposto'
+      ],
+      datasets: [{
+        // label: 'My First Dataset', // suprimir esta linha 
+        // como tem 3 cores ou partes, entáo, 300, 50, 100 
+        // correspondem os %s das partes que compöem o chart 
+        // data: [300, 50, 100],  
+
+        // Rendimento líquido
+        // finalInvestimentObject.totalInterestReturns*(1-taxRate/100)
+
+        // poderia ser visto assim: 
+        // finalInvestimentObject.totalInterestReturns - 
+        // finalInvestimentObject.totalInterestReturns*taxRate/100
+
+        data: [
+               formatCurrency(finalInvestimentObject.investedAmount), 
+               formatCurrency(finalInvestimentObject.totalInterestReturns*(1-taxRate/100)), 
+               formatCurrency(finalInvestimentObject.totalInterestReturns*(taxRate/100))
+              ],  
+        backgroundColor: [
+          'rgb(255, 99, 132)',
+          'rgb(54, 162, 235)',
+          'rgb(255, 205, 86)'
+        ],
+        hoverOffset: 4
+      }]
+    },
+});
+
+// 
+progressionChartReference = new Chart (progressionChart,{
+  type: 'bar',
+  data: {
+    labels: returnsArray.map(investObject => investObject.month),
+    datasets: [{
+      label: 'Total Investido',
+      // map -> ele pega uma lista e gera outra lista do mesmo tamanho em funcao de uma condicao
+      // entre as duas.  
+      // returnsArray retorna com todos os dados de investimento, mes a mes, de acordo com o prazo de 
+      // investimento   
+      // investedAmount = startingAmount + monthlyContribution * timeReference;
+      data: returnsArray.map (investObject => formatCurrency(investObject.investedAmount)),    
+      // o primeiro investObject representa a cada objeto da lista original e
+      // investObject.investedAmount é o dado que vai ser entregue à nova lista 
+      backgroundColor: 'rgb(255, 99, 132)'
+    },{
+      label: 'Retorno do Investimento',
+      // interestReturns = returnsArray[timeReference-1].totalAmount * (finalReturnRate - 1);
+      data: returnsArray.map (investObject => formatCurrency(investObject.interestReturns)),
+      backgroundColor: 'rgb(54, 162, 235)'
+    } ]    
+  },
+  options: {
+    plugins: {
+      title: {  
+        display: true,
+        text: 'Chart.js Bar Chart - Stacked'
+      },
+    },
+    responsive: true,
+    scales: {
+      x: {
+        stacked: true,
+      },
+      y: {
+        stacked: true
+         }
+        }
+      }
+  })
+}
+
+function isObjectEmpty (obj){
+  // Object se refere "entidade" do objeto  
+  // com isso, return retorna uma lista de todas as chaves que compöe o objeto
+  // name: 'ddd', endereco: 'ksss'
+  // name, endereco.. etc ?!
+  // É um Booleano e isso será verdadeiro qdo for 1 objeto vazio        
+ return Object.keys(obj).label===0;          
+}
+
+function resetCharts(){
+// a intençäo de resetar é qdo os 2 näo forem vazios 
+if (!isObjectEmpty(doughnutChartReference) && !isObjectEmpty(progressionChartReference)){
+  // destroy() é um método que existe nos objetos Charts (classe)
+  doughnutChartReference.destroy; 
+  progressionChartReference.destroy;
+}
 }
 
 
 // Limpando o formulário com ou sem msgs de erro na tela
 function clearForm(){
-form['starting-amount'].value = '';
-form['additional-contribution'].value = '';
-form['time-amount'].value = '';
-form['return-rate'].value = '';
-form['tax-rate'].value = '';
+  form['starting-amount'].value = '';
+  form['additional-contribution'].value = '';
+  form['time-amount'].value = '';
+  form['return-rate'].value = '';
+  form['tax-rate'].value = '';
+
+  resetCharts();
 
 // errorInputContainers se refere à divisäo toda do formulário que contém a classe ".error" 
 // e onde tem essa classe ? Resp: na div_pai que engloba vários inputs 
 // Qdo se usa querySelector, o argumento passado deve indicar o tipo de seletor e o seu nome
-const errorInputContainers = document.querySelectorAll('.error');
+  const errorInputContainers = document.querySelectorAll('.error');
 
-for (const errorInputContainer of errorInputContainers){
+  for (const errorInputContainer of errorInputContainers){
     // errorInputContainer é o item corrente da lista de errorInputContainers
     // e errorInputContainers se refere à div_pai, mas, é preciso tirar tbém os erros do avô
     errorInputContainer.classList.remove('error');
 
     // Procurar pelo pai do errorInputContainer que é no caso é o parentElement
     errorInputContainer.parentElement.querySelector('p').remove();
-
+  }
 }
-
-}
-
 
 
 function inputValidate(evt){ 
@@ -172,9 +296,7 @@ for (const formElement of form){
         formElement.addEventListener('blur',inputValidate);
         // formElement.addEventListener ('blur', inputValidate);  
         // todas as vezes em há "addEventListener", a funçäo associado ao evento recebe um objeto (evt).
-        // Esse objeto (ex: evt) contém as informaçöes do evento em questäo
-        
- 
+        // Esse objeto (ex: evt) contém as informaçöes do evento em questäo  
     }
 }
 

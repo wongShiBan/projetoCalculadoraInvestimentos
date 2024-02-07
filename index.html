@@ -97,10 +97,19 @@
         <button id="clear-form" class="w-1/2 rounded-lg  hover:bg-emerald-500">Limpar</button>
       </div>      
      </aside>     
-     <main>
-      <p>Resultados</p>
+     <main class="h-full">  <!--h-full significa adotar toda a altura do pai dele (body)-->
+      <section id="charts-contaiber">
+         <div class="h-[36dvh]"> 
+          <p>Resultado final</p>
+          <canvas id="final-money-contribution"></canvas>
+         </div>
+         <div class="h-[56dvh]"> <!-- 36 + 56 é diferente de 100%, é por uma questäo de margem neste gráfico de barras-->
+           <p>Progressäo</p>
+           <canvas id="progression"></canvas>
+         </div>
+      </section>     
      </main>
-     <!--type="module" quer dizer a forma de trabalhar com os módulos é por meio de Esmodule-->
+     <!--type="module" quer dizer: a forma de trabalhar com os módulos é por meio de Esmodule-->
      <!--Esta linha faz com que Html interage com o main.js-->
      <script type="module" src="./main.js"></script>
   </body>

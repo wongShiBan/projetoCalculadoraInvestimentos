@@ -20,8 +20,9 @@ export function generateReturnsArray(
     returnTimeFrame = "monthly")   // tipo/modo da taxa de retorno (por/mes ou por/ano)
 {
     // Faz crítica dos dados de entrada 
+    // Se informar startingAmount = 0, entende-se como false ou, na forma booleana, !startingAmount 
     if (!startingAmount || !timeHorizon){   // um ou outro for false (!)
-    throw new Error('Investimento inicial ou prazo devem ser informados com valores positivos!')
+       throw new Error('Investimento inicial ou prazo devem ser informados com valores positivos !')
     };
 
     // ternário 
@@ -39,7 +40,7 @@ export function generateReturnsArray(
     // Adequar o prazo para mes se o "tipo de prazo" informado for anual
     const finalTimeHorizon = timePeriod === 'monthly' ?  timeHorizon : timeHorizon * 12;
 
-    // Criar objeto de referencia com atributos necessários p/ que cada resultado de investimento 
+    // Criar objeto de referencia com atributos necessários p/ registrar cada resultado do investimento 
     // mensal 
     const referenceInvestimentObject = {
       investedAmount: startingAmount,     // investimento inicial de cada mes
@@ -50,12 +51,18 @@ export function generateReturnsArray(
     }
     
     // lista de objetos ou lista de resultados 
+    // =======================================
+    // Mes 0 -> Corresponde ao objeto referenceInvestimentObject com dados iniciais como 
+    //          investedAmount: startingAmount,
+    //          totalAmount: startingAmount,
+
     // Mes 1 -> objeto1 
     // Mes 2 -> objeto2 
     // ...   -> objetoN
     // 
     const returnsArray = [referenceInvestimentObject];  
-    // para o primeiro elemento: [0] = referenceInvestimentObject 
+    // para o primeiro returnsArray [0] = referenceInvestimentObject 
+    // o q se tem nela säo: investedAmount: startingAmount e totalAmount: startingAmount
 
     // timeReference = 1, pois assim, o que se faz é preparar para o mes 1 
     // porque o mes 0 é o "referenceInvestimentObject"
@@ -75,23 +82,29 @@ export function generateReturnsArray(
        // 
        // Entäo, para ciclo seguinte, o totalAmount será corrigido pela aplicaçäo da taxa   
        // e mais o valor da monthlyContribution, e deste modo já preparando para o próximo ciclo;
-
-       // OBS: Esta equaçäo prepara o montante para o próximo mes
+       
+       // Ex: returnsArray[timeReference-1].totalAmount = 10000 (é o valor do mes anterior)  
+       // e totalAmount = tudo q tinha do mes passado * pela correçäo + aporte mensal        
+       // OBS: Este valor já serve como base de cálculo para o mes seguinte
        const totalAmount = returnsArray[timeReference-1].totalAmount * finalReturnRate + monthlyContribution;
 
-       // interestReturns diz o qto que rendeu naquele mes 
+       // interestReturns diz o qto que rendeu naquele último mes 
        // É o valor que tem multiplicado pela taxa de retorno
-       // Ex: timeReference-1.totalAmount se refere sempre o anterior 
-       const interestReturns = returnsArray[timeReference-1].totalAmount * finalReturnRate;
+       // Ex: returnsArray[timeReference-1].totalAmount se refere sempre o mes anterior 
+       // Ex: mes [1 - 1] = mes [0] => totalAmount = investedAmount = 10000
+       // returnsArray[timeReference-1].totalAmount * (finalReturnRate - 1) = 10000 * 0.05 = 500
+       const interestReturns = returnsArray[timeReference-1].totalAmount * (finalReturnRate - 1);
 
-       // investAmount -> total de investido = startingAmount + Qtd de aportes efetuados
+       // investAmount -> total investido = startingAmount + Qtd de aportes efetuados
        // Caso no início näo houver Contribution, entäo investAmount = startingAmount
        // OBS: na vida real, monthlyContribution pode ser variável, logo esta equaçäo näo se sustenta
-       // Ex: startingAmount = 10000, monthlyContribution = 3000, timeReference = 1 
-       // investedAmount = 13000
+
+       // Ex: startingAmount = 10000, monthlyContribution = 3000, timeReference = 1
+       // investedAmount = 13000, onde startingAmount é o investimento inicial
        const investedAmount = startingAmount + monthlyContribution * timeReference;
 
-       // total de rendimento é igual tudo que tem no momento menos tudo que foi investido
+       // total dos rendimentos (juros obtidos) é igual tudo que tem no momento menos tudo que foi 
+       // investido 
        // Ex: total do momento menos ( - ) o total investido 
        const totalInterestReturns = totalAmount - investedAmount;
 
@@ -99,11 +112,11 @@ export function generateReturnsArray(
        // OBS: qdo os campos do objeto possuem nomes iguais às das variáveis, neste caso basta
        // deixar os nomes dos campos para facilitar e simplificar a codificaçäo. 
 
-       /* Dados informados 
-          investedAmount  = 10000
-          monthlyContribution  = 3000 
+       /* Dados informados ao formulário
+          investedAmount = 10000
+          monthlyContribution = 3000 
           timeHorizon = 60 meses 
-          returnRate = 5 ao mes 
+          returnRate  = 5% ao mes 
        */
 
        // OBS: 
@@ -113,13 +126,26 @@ export function generateReturnsArray(
                          interestReturns = 0,
                          totalInterestReturns = 0,
                          month = 0,
-                         totalAmount = 10000
+                       * totalAmount = 10000 
 
-          Para mes 1     investedAmount  = 13000,
-                         interestReturns = 10500,
-                         totalInterestReturns = 500,
+          Para mes 1     investedAmount  = 13000 => (invst inicial + NrContrib * ValorContrib)
+                         interestReturns = 500,   
+                         totalInterestReturns = 500 ==> (totalAmount - investedAmount)
                          month = 1,
-                         totalAmount = 13500
+                       * totalAmount = 13500 => (totalAmount mes anter * correçäo + ValorContrib)  
+ 
+          Para mes 2     investedAmount  = 16000 (invst inicial + NrContrib * ValorContrib)
+                         interestReturns = 675 
+                         totalInterestReturns = 1175 ==> (totalAmount - investedAmount)
+                         month = 2,
+                       * totalAmount = 17175 => (totalAmount mes anter * correçäo + ValorContrib)
+
+          Para mes 3     investedAmount  = 19000 (invst inicial + NrContrib * ValorContrib)
+                         interestReturns = 858
+                         totalInterestReturns = 2033 ==> (totalAmount - investedAmount)
+                         month = 3,
+                       * totalAmount = 21033 => (totalAmount mes anter * correçäo + ValorContrib)
+
        */
        returnsArray.push({
         investedAmount,
