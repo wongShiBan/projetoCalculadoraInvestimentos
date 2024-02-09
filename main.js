@@ -173,12 +173,14 @@ progressionChartReference = new Chart (progressionChart,{
     } ]    
   },
   options: {
+    /*
     plugins: {
       title: {  
         display: true,
         text: 'Chart.js Bar Chart - Stacked'
       },
     },
+    */
     responsive: true,
     scales: {
       x: {
