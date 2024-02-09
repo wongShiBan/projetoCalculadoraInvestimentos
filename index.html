@@ -7,6 +7,7 @@
     <title>Calculadora de Investimentos Impressionadora</title>
   </head>
   <body class="h-[100dvh] grid grid-cols-3 grid-rows-2">   
+     <!--h-[100dvh] = 100% da altura da janela-->
      <!--automaticamente o vite atualiza a página assim q inserir = hot reload -->  
      <!--OBS: essa atualizaçäo nem sempre ocorre-->    
      <!--<h1>Calculadora de Investimentos</h1> -->
@@ -97,14 +98,21 @@
         <button id="clear-form" class="w-1/2 rounded-lg  hover:bg-emerald-500">Limpar</button>
       </div>      
      </aside>     
-     <main class="h-full">  <!--h-full significa adotar toda a altura do pai dele (body)-->
-      <section id="charts-contaiber">
-         <div class="h-[36dvh]"> 
-          <p>Resultado final</p>
+     <!--versäo anterior: <main class="h-full"> que ocupa somente uma célula da grid-->
+     <!--onde h-full significa em adotar toda a altura do pai dele (body)-->
+     <!--aliás, dessa maneira, a main só estava ocupando 1 linha e 1 coluna-->
+     <!--e os 2 gráficos vazam pra baixo, entäo os 2 gráficos devem ocupar 2 linhas e 2 cols  .. -->
+     <main class="row-span-2 col-span-2">        
+      <section id="charts-container" class="h-full"> <!--h-full (q lida com %) = 100% height-->
+         <!-- era assim: <div class="h-[36dvh]"> -->
+         <div class="h-[36%] flex flex-col items-center pb-10">            
+          <!-- pb-2 = padding-bottom: 2.5 rem-->
+          <p class="font-bold text-lg">Resultado final</p> <!-- era assim: <p>Resultado final</p>-->
           <canvas id="final-money-contribution"></canvas>
          </div>
-         <div class="h-[56dvh]"> <!-- 36 + 56 é diferente de 100%, é por uma questäo de margem neste gráfico de barras-->
-           <p>Progressäo</p>
+         <!--36 + 56 é diferente de 100%, é por 1 questäo de margem neste gráfico de barras -->         
+         <div class="h-[56%] flex flex-col items-center"> <!--era assim: <div class="h-[56dvh]"> -->   
+           <p class="font-bold text-lg">Progressäo</p> <!-- era assim: <p>Progressäo</p>-->
            <canvas id="progression"></canvas>
          </div>
       </section>     
