@@ -198,15 +198,15 @@ function isObjectEmpty (obj){
   // name: 'ddd', endereco: 'ksss'
   // name, endereco.. etc ?!
   // É um Booleano e isso será verdadeiro qdo for 1 objeto vazio        
- return Object.keys(obj).label===0;          
+ return Object.keys(obj).length===0;          
 }
 
 function resetCharts(){
 // a intençäo de resetar é qdo os 2 näo forem vazios 
 if (!isObjectEmpty(doughnutChartReference) && !isObjectEmpty(progressionChartReference)){
   // destroy() é um método que existe nos objetos Charts (classe)
-  doughnutChartReference.destroy; 
-  progressionChartReference.destroy;
+  doughnutChartReference.destroy(); 
+  progressionChartReference.destroy();
 }
 }
 
